@@ -10,9 +10,7 @@ const ButtonVideo: React.FC<IButtonSetting> = (props) => {
   
     const handleStart = () => {
       console.log(props.ref);
-        // if (props.ref?.current) {
-        //     props.ref.current.play();
-        //   }
+            props.ref.play();
         };
 //   const handlePause = () => {
 //     props.ref?.pause()
