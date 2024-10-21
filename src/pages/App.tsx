@@ -30,9 +30,9 @@ function App() {
   }, [videoElement]);
   React.useEffect(() => {
     // videoElement.play();
-    // const layer = imageRef.current.getLayer();
+    const layer = imageRef.current.getLayer();
 
-    const anim = new Konva.Animation(() => {}, Layer);
+    const anim = new Konva.Animation(() => {}, layer);
     anim.start();
 
     return () => {anim.stop();}
