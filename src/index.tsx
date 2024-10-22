@@ -9,6 +9,10 @@ const Global = createGlobalStyle`
     padding: 0;
     box-sizing: border-box;
   }
+  html {
+    background: grey;
+    overflow: hidden;
+  }
 `;
 
 const root = ReactDOM.createRoot(

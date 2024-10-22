@@ -18,9 +18,8 @@ const Video = React.forwardRef((props: any, ref: any) => {
         ref={ref}
         image={ref.current}
         stroke="black"
-        width={700}
-        height={400}
-
+        width={500}
+        height={300}
       />
   );
 });

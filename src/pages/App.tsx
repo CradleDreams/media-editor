@@ -1,8 +1,9 @@
 import { Layer, Rect, Stage } from "react-konva";
 import { useState } from "react";
 import React from "react";
-import ButtonVideo from "../shared/ui/ButtonVideo";
 import Video from "../components/Video";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 
 function App() {
@@ -29,26 +30,16 @@ function App() {
     return element;
   }, [src, imageRef]);
 
-  const handlePlay = () => {
-    imageRef.current.play();
-  };
-
-  const handlePause = () => {
-    imageRef.current.pause();
-  };
-
   return (
     <>
-      <Stage width={window.innerWidth} height={400} visible={true}>
-        <Layer width={700} height={400} x={window.innerWidth/4} draggable>
-        <Rect width={700} height={400} fill={"black"}/>
-          <Video ref={imageRef} />
+    <Header/>
+      <Stage width={window.innerWidth} height={300} visible={true}>
+        <Layer width={500} height={300} x={window.innerWidth/3.1} draggable>
+        <Rect width={500} height={300} fill={"black"}/>
+          <Video ref={imageRef}/>
         </Layer>
       </Stage>
-
-      <input type={"file"} accept={"video/mp4"} onChange={handleOnChange} />
-      <ButtonVideo text={"Play"} func={handlePlay} />
-      <ButtonVideo text={"Pause"} func={handlePause} />
+      <Footer Change={handleOnChange} rf={imageRef}/>
     </>
   );
 }
