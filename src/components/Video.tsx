@@ -1,63 +1,48 @@
 import Konva from "konva";
-import { KonvaEventListener } from "konva/lib/Node";
 import React from "react";
 import {Image} from 'react-konva'
 
-interface IVideoSetting {
-  src: string,
-  func: Function
-}
-const Video = ({src, func}: IVideoSetting) => {
-  const imageRef = React.useRef<any>();
-  const [size, setSize] = React.useState({ width: 50, height: 50 });
+// interface IVideoSetting {
+//   src: string,
+//   ref: any
+// }
+const Video = React.forwardRef((props: any, ref: any) => {
+  
+  // const [size, setSize] = React.useState({ width: 200, height: 200 }); 
 
-  // we need to use "useMemo" here, so we don't create new video elment on any render
-  const videoElement = React.useMemo(() => {
-    const element = document.createElement("video");
-    element.src = src;
-    return element;
-  }, [src]);
-
-  // when video is loaded, we should read it size
+  // React.useEffect(() => {
+  //   const onload = function() {
+  //     setSize({
+  //       width: ref.current.videoWidth,
+  //       height: ref.current.videoHeight
+  //     });
+  //   };
+  //   ref.current.addEventListener("loadedmetadata", onload);
+  //   return () => {
+  //     ref.current.removeEventListener("loadedmetadata", onload);
+  //   };
+  // }, [ref.current]);
   React.useEffect(() => {
-    const onload = function() {
-      setSize({
-        width: videoElement.videoWidth,
-        height: videoElement.videoHeight
-      });
-    };
-    videoElement.addEventListener("loadedmetadata", onload);
-    return () => {
-      videoElement.removeEventListener("loadedmetadata", onload);
-    };
-  }, [videoElement]);
-
-  // use Konva.Animation to redraw a layer
-  React.useEffect(() => {
-    func(videoElement)
-    videoElement.play();
-    const layer = imageRef.current.getLayer();
+    const layer = ref.current.getLayer();
 
     const anim = new Konva.Animation(() => {}, layer);
     anim.start();
 
     return () => {anim.stop();}
-  }, [videoElement]);
+  }, [ref]);
 
   return (
-    <>
     <Image
-      ref={imageRef!}
-      image={videoElement}
-      x={20}
-      y={20}
-      stroke="red"
-      width={size.width}
-      height={size.height}
-      draggable
-    />
-    </>
+        ref={ref}
+        image={ref.current}
+        x={20}
+        y={20}
+        stroke="red"
+        width={700}
+        height={400}
+        draggable
+      />
   );
-};
+});
 
 export default Video

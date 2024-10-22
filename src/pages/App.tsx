@@ -1,69 +1,58 @@
-import {Layer, Stage, Image} from "react-konva";
+import { Layer, Stage} from "react-konva";
 import { useState } from "react";
 import React from "react";
-import Konva from "konva";
+import ButtonVideo from "../shared/ui/ButtonVideo";
+import Video from "../components/Video";
 
 function App() {
-  const [src, setSrc] = useState('')
-  const [video, setVideo] = useState<any>()
-
+  const [src, setSrc] = useState<any>();
   const imageRef = React.useRef<any>();
-  const [size, setSize] = React.useState({ width: 50, height: 50 });
 
-  const videoElement = React.useMemo(() => {
+  
+  const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement & {
+      files: FileList;
+    };
+    const file = new FileReader();
+
+    file.onload = function () {
+      setSrc(file.result);
+    };
+
+    file.readAsDataURL(target.files[0]);
+    
+  };
+
+  React.useMemo(() => {
     const element = document.createElement("video");
     element.src = src;
+    imageRef.current = element
     return element;
-  }, [src]);
+  }, [src, imageRef]);
 
-  React.useEffect(() => {
-    const onload = function() {
-      setSize({
-        width: videoElement.videoWidth,
-        height: videoElement.videoHeight
-      });
-    };
-    videoElement.addEventListener("loadedmetadata", onload);
-    return () => {
-      videoElement.removeEventListener("loadedmetadata", onload);
-    };
-  }, [videoElement]);
-  React.useEffect(() => {
-    // videoElement.play();
-    const layer = imageRef.current.getLayer();
+  
 
-    const anim = new Konva.Animation(() => {}, layer);
-    anim.start();
+  const handlePlay = () => {
+    imageRef.current.getImage().play();
+  };
 
-    return () => {anim.stop();}
-  }, [videoElement]);
+  const handlePause = () => {
+    imageRef.current.getImage().pause();
+  };
 
   return (
     <>
-    <Stage width={500} height={500}>
-    <Layer>
-        <Image
-        ref={imageRef}
-        image={videoElement}
-        x={20}
-        y={20}
-        stroke="red"
-        width={size.width}
-        height={size.height}
-        draggable
-      />
-    </Layer>
-  </Stage> 
-  <input
-          value={src}
-          onChange={event => setSrc(event.target.value)}
-          placeholder={'Введите ссылку'}
-        />
-         <button onClick={() => videoElement.play()}> Play</button>
-         <button onClick={() => videoElement.pause()}> Pause</button>
-  </>
-  )
-};
+      <Stage width={window.outerWidth} height={500}>
+        <Layer>
+          {src && (<Video ref={imageRef}/>)}
+        </Layer>
+      </Stage>
+      <input type={"file"} accept={"video/mp4"} onChange={handleOnChange} />
+      <ButtonVideo text={"Play"} func={handlePlay} />
+      <ButtonVideo text={"Pause"} func={handlePause} />
+    </>
+  );
+}
 
 export default App;
 
