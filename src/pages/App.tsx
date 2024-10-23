@@ -34,9 +34,9 @@ function App() {
     <>
     <Header/>
       <Stage width={window.innerWidth} height={300} visible={true}>
-        <Layer width={500} height={300} x={window.innerWidth/3.1} draggable>
+        <Layer width={500} height={300} x={window.innerWidth/3.1}>
         <Rect width={500} height={300} fill={"black"}/>
-          <Video ref={imageRef}/>
+          {src ? (<Video ref={imageRef}/>) : (<></>)}
         </Layer>
       </Stage>
       <Footer Change={handleOnChange} rf={imageRef}/>

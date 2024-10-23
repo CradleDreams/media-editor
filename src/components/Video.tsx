@@ -9,17 +9,16 @@ const Video = React.forwardRef((props: any, ref: any) => {
 
     const anim = new Konva.Animation(() => {}, layer);
     anim.start();
-
     return () => {anim.stop();}
   }, [ref]);
-
   return (
     <Image
         ref={ref}
+        stroke={"black"}
         image={ref.current}
-        stroke="black"
         width={500}
         height={300}
+        draggable
       />
   );
 });

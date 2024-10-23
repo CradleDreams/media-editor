@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import ButtonVideo from "../shared/ui/ButtonVideo";
+import { StyledButton } from "../shared/ui/ButtonVideo";
 
 const StyledFooter = styled.div`
         display: flex;
@@ -14,11 +14,19 @@ const StyledFooter = styled.div`
     `;
     
 const Footer = (props: any) => {
+    
+    const handlePlay = () => {
+        props.rf.current.getImage().play()
+    }
+    const handlePause = () => {
+        props.rf.current.getImage().pause()
+    }
     return ( 
     <StyledFooter>
        <input type={"file"} accept={"video/mp4"} onChange={props.Change}/>
-      <ButtonVideo text={"Play"} rf={props.rf}/>
-      <ButtonVideo text={"Pause"} rf={props.rf}/>
+      <StyledButton onClick={handlePlay}>Play<img src={`images/Play.svg`} style={{width: 20, height: 20, color: "white"}} alt={'Картинка'}/></StyledButton>
+      <StyledButton onClick={handlePause}>Pause<img src={`images/Pause.svg`} style={{width: 20, height: 20, color: "white"}} alt={'Картинка'}/></StyledButton>
+
     </StyledFooter> 
     );
 }
