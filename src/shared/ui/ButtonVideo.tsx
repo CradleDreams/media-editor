@@ -10,4 +10,3 @@ export const StyledButton = styled.button`
   justify-content: center;
   font-size: 13pt;
 `;
-
