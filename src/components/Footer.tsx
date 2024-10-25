@@ -10,10 +10,10 @@ const StyledFooter = styled.div`
   flex-direction: row;
   justify-content: center;
   font-size: 40pt;
-  margin-top: 50px;
 `;
 
 const Footer = (props: any) => {
+  
   const handlePlay = () => {
     props.rf.current.map((el: any) => {
       return el.play()
@@ -26,7 +26,7 @@ const Footer = (props: any) => {
   }
   return (
     <StyledFooter>
-      <input type={"file"} accept={"video/mp4"} onChange={props.Change} />
+      <input type={"file"} accept={"video/mp4"} onChange={props.Change} style={{height: 25}}/>
           <StyledButton onClick={handlePlay}>
             Play
             <img

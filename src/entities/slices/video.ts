@@ -23,7 +23,16 @@ const videoSlice = createSlice({
     createVideo: (state, action: PayloadAction<IVideo>) => {
       state.videos.push(action.payload);
     },
+    updateVideo: (state, action: PayloadAction<IVideo>) => {
+      const index = state.videos.findIndex(video => video.id === action.payload.id);
+      if (index !== -1) {
+        state.videos[index] = {
+          ...state.videos[index],
+          ...action.payload,
+        };
+      }
+    },
   },
 });
-export const { createVideo } = videoSlice.actions;
+export const { createVideo, updateVideo} = videoSlice.actions;
 export const videoReducer =  videoSlice.reducer;

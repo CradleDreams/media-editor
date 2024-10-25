@@ -8,7 +8,6 @@ const StyledHeader = styled.div`
         flex-direction: row;
         justify-content: center;
         font-size: 40pt;
-        margin-bottom: 50px;
     `;
 
 const Header = () => {
