@@ -6,7 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../entities/store";
-import { createVideo, updateVideo } from "../entities/slices/video";
+import { createVideo, updateVideo } from "../entities/slices/videoSlice";
 import { v4 as uuidv4 } from "uuid";
 import { useTypedSelector } from "../shared/hooks/useTypedSelector";
 import Konva from "konva";
@@ -25,7 +25,7 @@ function App() {
     }
   };
 
-  const { videos } = useTypedSelector((state) => state.videos);
+  const { videos } = useTypedSelector((state) => state.videos.present);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement & {
@@ -43,9 +43,9 @@ function App() {
   useEffect(() => {
     const element = document.createElement("video");
     const id = uuidv4();
-    element.setAttribute('id', id)
+    element.setAttribute("id", id);
     element.src = src;
-    if (src) {
+    if (src && !videos.find((el) => el.src === src)) {
       imageRef.current.push(element);
       dispatch(
         createVideo({
@@ -54,12 +54,13 @@ function App() {
           x: 0,
           y: 0,
           width: 500,
-          height: 300
+          height: 300,
         })
       );
     }
-    
-  }, [src, dispatch]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src]);
 
   useEffect(() => {
     const layer = layerRef.current;
@@ -80,17 +81,11 @@ function App() {
         onMouseDown={checkDeselect}
         onTouchStart={checkDeselect}
       >
-        <Layer
-          ref={layerRef}
-          x={window.innerWidth / 3.1}
-          offsetY={-50}
-        >
+        <Layer ref={layerRef} x={window.innerWidth / 3.1} offsetY={-50}>
           <Rect width={500} height={300} fill={"black"} />
           {videos.map((video) => {
-            const ref = imageRef.current.find(
-              (el) => el.id === video.id
-            );
-            let videoProps = videos.find((el) => el.id === video.id)
+            const ref = imageRef.current.find((el) => el.id === video.id);
+            let videoProps = videos.find((el) => el.id === video.id);
             return (
               <Video
                 video={ref}

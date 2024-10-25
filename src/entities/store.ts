@@ -1,9 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { videoReducer } from "./slices/video";
+import { videoReducer } from "./slices/videoSlice";
+import undoable from "redux-undo";
 
 export const store = configureStore({
   reducer: {
-    videos: videoReducer,
+    videos: undoable(videoReducer, {limit: 10}),
   },
 });
 

@@ -1,7 +1,7 @@
-import React, { forwardRef } from "react";
+import React from "react";
 import { Image, Transformer } from "react-konva";
 
-const Video = forwardRef(({video, isSelected, onSelect, onChange, videoProps}: any) => {
+const Video = (({video, isSelected, onSelect, onChange, videoProps}: any) => {
   const videoRef = React.useRef<any>();
   const trRef = React.useRef<any>();
   
