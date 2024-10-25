@@ -82,7 +82,6 @@ function App() {
       >
         <Layer
           ref={layerRef}
-    
           x={window.innerWidth / 3.1}
           offsetY={-50}
         >
@@ -95,7 +94,6 @@ function App() {
             return (
               <Video
                 video={ref}
-                ref={imageRef}
                 videoProps={videoProps}
                 isSelected={video.id === selectedId}
                 onSelect={() => {
@@ -104,7 +102,6 @@ function App() {
                 onChange={(newAttrs: any) => {
                   dispatch(updateVideo(newAttrs));
                 }}
-                
               />
             );
           })}
@@ -116,5 +113,3 @@ function App() {
 }
 
 export default App;
-
-// https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4

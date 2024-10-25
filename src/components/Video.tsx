@@ -1,21 +1,22 @@
 import React, { forwardRef } from "react";
 import { Image, Transformer } from "react-konva";
 
-const Video = forwardRef(({video, isSelected, onSelect, onChange, videoProps}: any, ref: any) => {
+const Video = forwardRef(({video, isSelected, onSelect, onChange, videoProps}: any) => {
+  const videoRef = React.useRef<any>();
   const trRef = React.useRef<any>();
   
   React.useEffect(() => {
     if (isSelected) {
-      trRef.current.nodes([ref.current.current]);
+      trRef.current.nodes([videoRef.current]);
       trRef.current.getLayer().batchDraw();
     }
-  }, [isSelected, ref]);
+  }, [isSelected]);
 
   return (
     <>
     <Image
       key={video.id}
-      ref={ref.current}
+      ref={videoRef}
       onClick={onSelect}
       onTap={onSelect}
       stroke={"black"}
@@ -30,7 +31,7 @@ const Video = forwardRef(({video, isSelected, onSelect, onChange, videoProps}: a
         });
       }}
       onTransformEnd={(e) => {
-        const node = ref.current.current;
+        const node = videoRef.current;
         const scaleX = node.scaleX();
         const scaleY = node.scaleY();
 
