@@ -1,9 +1,9 @@
 import { Layer, Rect, Stage } from "react-konva";
 import { useEffect, useState } from "react";
 import React from "react";
-import Video from "../components/Video";
+import Video from "../widgets/Video";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
+import ControlPanel from "../components/ControlPanel";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../entities/store";
 import { createVideo, updateVideo } from "../entities/slices/videoSlice";
@@ -25,7 +25,7 @@ function App() {
     }
   };
 
-  const { videos } = useTypedSelector((state) => state.videos.present);
+  const { videos, time} = useTypedSelector((state) => state.videos.present);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement & {
@@ -34,6 +34,7 @@ function App() {
     const file = new FileReader();
 
     file.onload = function () {
+      
       setSrc(file.result);
     };
 
@@ -45,8 +46,11 @@ function App() {
     const id = uuidv4();
     element.setAttribute("id", id);
     element.src = src;
+    console.log(src);
+    
     if (src && !videos.find((el) => el.src === src)) {
       imageRef.current.push(element);
+      
       dispatch(
         createVideo({
           id: id,
@@ -58,7 +62,6 @@ function App() {
         })
       );
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
 
@@ -70,6 +73,11 @@ function App() {
       anim.stop();
     };
   }, [layerRef]);
+
+  useEffect(() => {
+    imageRef.current.map((el) => el.currentTime = time)
+  }, [time])
+
 
   return (
     <>
@@ -85,11 +93,10 @@ function App() {
           <Rect width={500} height={300} fill={"black"} />
           {videos.map((video) => {
             const ref = imageRef.current.find((el) => el.id === video.id);
-            let videoProps = videos.find((el) => el.id === video.id);
             return (
               <Video
                 video={ref}
-                videoProps={videoProps}
+                videoProps={video}
                 isSelected={video.id === selectedId}
                 onSelect={() => {
                   selectVideo(video.id);
@@ -102,7 +109,7 @@ function App() {
           })}
         </Layer>
       </Stage>
-      <Footer Change={handleOnChange} rf={imageRef} />
+      <ControlPanel Change={handleOnChange} rf={imageRef} />
     </>
   );
 }

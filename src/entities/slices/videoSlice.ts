@@ -11,9 +11,11 @@ interface IVideo {
 }
 interface IVideoSlice {
   videos: IVideo[];
+  time: number
 }
 const initialState: IVideoSlice = {
   videos: [],
+  time: 0
 };
 
 const videoSlice = createSlice({
@@ -32,7 +34,10 @@ const videoSlice = createSlice({
         };
       }
     },
+    updateTime: (state, action: PayloadAction<Pick<IVideoSlice, 'time'>>) => {
+      state.time = action.payload.time;
+    }
   },
 });
-export const { createVideo, updateVideo} = videoSlice.actions;
+export const { createVideo, updateVideo, updateTime} = videoSlice.actions;
 export const videoReducer =  videoSlice.reducer;
