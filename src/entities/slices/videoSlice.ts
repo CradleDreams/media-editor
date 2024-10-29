@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface IVideo {
+export interface IVideo {
   id: string;
   src: string;
   width?: number;
@@ -11,11 +11,11 @@ interface IVideo {
 }
 interface IVideoSlice {
   videos: IVideo[];
-  time: number
+  time: number;
 }
 const initialState: IVideoSlice = {
   videos: [],
-  time: 0
+  time: 0,
 };
 
 const videoSlice = createSlice({
@@ -26,7 +26,9 @@ const videoSlice = createSlice({
       state.videos.push(action.payload);
     },
     updateVideo: (state, action: PayloadAction<IVideo>) => {
-      const index = state.videos.findIndex(video => video.id === action.payload.id);
+      const index = state.videos.findIndex(
+        (video) => video.id === action.payload.id
+      );
       if (index !== -1) {
         state.videos[index] = {
           ...state.videos[index],
@@ -34,10 +36,13 @@ const videoSlice = createSlice({
         };
       }
     },
-    updateTime: (state, action: PayloadAction<Pick<IVideoSlice, 'time'>>) => {
+    updateTime: (state, action: PayloadAction<Pick<IVideoSlice, "time">>) => {
       state.time = action.payload.time;
+    },
+    deleteVideo: (state, action: PayloadAction<string>) => {
+      state.videos = state.videos.filter((video) => video.id !== action.payload)
     }
   },
 });
-export const { createVideo, updateVideo, updateTime} = videoSlice.actions;
-export const videoReducer =  videoSlice.reducer;
+export const { createVideo, updateVideo, updateTime, deleteVideo} = videoSlice.actions;
+export const videoReducer = videoSlice.reducer;

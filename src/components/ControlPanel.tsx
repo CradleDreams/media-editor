@@ -7,7 +7,7 @@ import { StyledIcon } from "../shared/ui/Icon";
 import WaveVideo from "../widgets/WaveVideo";
 import { WaveList } from "../shared/ui/WaveList";
 import { ButtonList } from "../shared/ui/ButtonList";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const StyledFooter = styled.div`
   display: flex;
@@ -25,23 +25,38 @@ const ControlPanel = (props: any) => {
   const pastStateHistory = useTypedSelector((state) => state.videos.past);
   const futureStateHistory = useTypedSelector((state) => state.videos.future);
 
+  const { time } = useTypedSelector((state) => state.videos.present);
+
   const handlePlay = () => {
-    props.rf.current.map((el: any) => {
+    props.rf.current.map((el: HTMLVideoElement) => {
       return el.play();
     });
+    // eslint-disable-next-line array-callback-return
     wavesurfer.map((el: any) => {
-      return el.play();
+      if (!el.media.error) {
+        return el.play();
+      }
+
     });
   };
   const handlePause = () => {
-    props.rf.current.map((el: any) => {
+    props.rf.current.map((el: HTMLVideoElement) => {
       return el.pause();
     });
+    // eslint-disable-next-line array-callback-return
     wavesurfer.map((el: any) => {
-      return el.pause();
+      if (!el.media.error) {
+        return el.pause();
+      }
+   
     });
   };
-
+  useEffect(() => {
+    wavesurfer.map((el: any) => {
+      return el.setTime(time);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [time]);
   const onReady = (ws: any) => {
     setWavesurfer([...wavesurfer, ws]);
   };
@@ -51,6 +66,7 @@ const ControlPanel = (props: any) => {
         <input
           type={"file"}
           accept={"video/mp4"}
+          multiple
           onChange={props.Change}
           style={{ height: 25 }}
         />
@@ -76,7 +92,7 @@ const ControlPanel = (props: any) => {
         </StyledButton>
       </ButtonList>
       <WaveList>
-        {props.rf.current.map((video: any) => {
+        {props.rf.current.map((video: HTMLVideoElement) => {
           return (
             <WaveVideo
               src={video.src}

@@ -6,17 +6,22 @@ import Header from "../components/Header";
 import ControlPanel from "../components/ControlPanel";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../entities/store";
-import { createVideo, updateVideo } from "../entities/slices/videoSlice";
+import {
+  createVideo,
+  deleteVideo,
+  IVideo,
+  updateVideo,
+} from "../entities/slices/videoSlice";
 import { v4 as uuidv4 } from "uuid";
 import { useTypedSelector } from "../shared/hooks/useTypedSelector";
 import Konva from "konva";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const [src, setSrc] = useState<any>();
+  const [src, setSrc] = useState<string | ArrayBuffer | null>();
   const imageRef = React.useRef<HTMLVideoElement[]>([]);
   const layerRef = React.useRef<Konva.Layer>(null);
-  const [selectedId, selectVideo] = React.useState<any>(null);
+  const [selectedId, selectVideo] = React.useState<string | null>(null);
 
   const checkDeselect = (e: any) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -25,7 +30,7 @@ function App() {
     }
   };
 
-  const { videos, time} = useTypedSelector((state) => state.videos.present);
+  const { videos, time } = useTypedSelector((state) => state.videos.present);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
     const target = e.target as HTMLInputElement & {
@@ -34,36 +39,46 @@ function App() {
     const file = new FileReader();
 
     file.onload = function () {
-      
       setSrc(file.result);
     };
-
+    
     file.readAsDataURL(target.files[0]);
   };
 
   useEffect(() => {
-    const element = document.createElement("video");
-    const id = uuidv4();
-    element.setAttribute("id", id);
-    element.src = src;
-    console.log(src);
-    
-    if (src && !videos.find((el) => el.src === src)) {
-      imageRef.current.push(element);
-      
-      dispatch(
-        createVideo({
-          id: id,
-          src,
-          x: 0,
-          y: 0,
-          width: 500,
-          height: 300,
-        })
-      );
-    }
+    // eslint-disable-next-line array-callback-return
+
+      const element = document.createElement("video");
+      const id = uuidv4();
+      element.setAttribute("id", id);
+      element.currentTime = 0.001;
+      if (src && !videos.find((el) => el.src === src)) {
+        element.src = src.toString();
+        imageRef.current.push(element);
+
+        dispatch(
+          createVideo({
+            id: id,
+            src: src.toString(),
+            x: 0,
+            y: 0,
+            width: 500,
+            height: 300,
+          })
+        );
+      }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
+  const delVideo = (e: any) => {
+    if (selectedId && e.keyCode === 8) {
+      imageRef.current.find((key: any) => key.id === selectedId)?.pause();
+      imageRef.current = imageRef.current.filter(
+        (key: any) => key.id !== selectedId
+      );
+      dispatch(deleteVideo(selectedId));
+    }
+  };
+  document.addEventListener("keydown", delVideo);
 
   useEffect(() => {
     const layer = layerRef.current;
@@ -72,12 +87,11 @@ function App() {
     return () => {
       anim.stop();
     };
-  }, [layerRef]);
+  }, []);
 
   useEffect(() => {
-    imageRef.current.map((el) => el.currentTime = time)
-  }, [time])
-
+    imageRef.current.map((el) => (el.currentTime = time));
+  }, [time]);
 
   return (
     <>
@@ -101,7 +115,7 @@ function App() {
                 onSelect={() => {
                   selectVideo(video.id);
                 }}
-                onChange={(newAttrs: any) => {
+                onChange={(newAttrs: IVideo) => {
                   dispatch(updateVideo(newAttrs));
                 }}
               />
