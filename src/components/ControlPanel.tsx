@@ -21,9 +21,14 @@ const StyledFooter = styled.div`
   flex-direction: column;
   font-size: 40pt;
 `;
+interface IVisibleVideo {
+  visibleVideo: boolean,
+  setVisibleVideo: (visibleVideo: boolean) => void
+}
 interface IControlPanelProps {
   Change: (e: React.FormEvent<HTMLInputElement>) => void
   rf: React.MutableRefObject<HTMLVideoElement[]>
+  VisibleVideo: IVisibleVideo
 }
 
 export interface IWaveSurferInstance {
@@ -31,6 +36,8 @@ export interface IWaveSurferInstance {
   play: () => void,
   pause: () => void,
   setTime: (time: number) => void
+  getMuted: () => boolean
+  setMuted: (muted: boolean) => void
 };
 export interface ICutWaveProps {
   duration: number, 
@@ -75,12 +82,26 @@ const ControlPanel = (props: IControlPanelProps) => {
       }
     });
   };
+
+  const handleMuted = () => {
+    // eslint-disable-next-line array-callback-return
+    wavesurfer.map((el) => {
+      if (!el.media.error) {
+        return el.setMuted(!el.getMuted())
+      }
+    });
+  }
+
+  const handleInvisible = () => {
+    props.VisibleVideo.setVisibleVideo(!props.VisibleVideo.visibleVideo)
+  }
   useEffect(() => {
     wavesurfer.map((el) => {
       return el.setTime(time);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]);
+
   const onReady = (ws: IWaveSurferInstance) => {
     setWavesurfer([...wavesurfer, ws]);
   };
@@ -129,6 +150,12 @@ const ControlPanel = (props: IControlPanelProps) => {
           onChange={props.Change}
           style={{ height: 25 }}
         />
+        <StyledButton onClick={handleMuted} style={{width: 50}}>
+          <StyledIcon src={`images/muted.svg`} alt={"muted"}/>
+        </StyledButton>
+        <StyledButton onClick={handleInvisible} style={{width: 50}}>
+          <StyledIcon src={`images/invisible.svg`} alt={"invisible"}/>
+        </StyledButton>
         <StyledButton onClick={handlePlay}>
           Play
           <StyledIcon src={`images/Play.svg`} alt={"play"} />

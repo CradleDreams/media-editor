@@ -9,6 +9,7 @@ interface IVideoProps {
   onSelect: () => void;
   onChange: (newAttrs: IVideo) => void;
   videoProps: IVideo;
+  visibleVideo: boolean
 }
 const Video = ({
   video,
@@ -16,6 +17,7 @@ const Video = ({
   onSelect,
   onChange,
   videoProps,
+  visibleVideo
 }: IVideoProps) => {
   const videoRef = React.useRef<Konva.Image>(null);
   const trRef = React.useRef<Konva.Transformer | null>(null);
@@ -36,6 +38,7 @@ const Video = ({
         stroke={"black"}
         image={video}
         {...videoProps}
+        visible={visibleVideo}
         draggable
         onDragEnd={(e) => {
           onChange({

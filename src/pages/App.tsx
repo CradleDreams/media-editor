@@ -22,6 +22,7 @@ function App() {
   const imageRef = React.useRef<HTMLVideoElement[]>([]);
   const layerRef = React.useRef<Konva.Layer>(null);
   const [selectedId, selectVideo] = React.useState<string | null>(null);
+  const [visibleVideo, setVisibleVideo] = useState<boolean>(true)
 
   const checkDeselect = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     const clickedOnEmpty = e.target === e.target.getStage();
@@ -53,6 +54,7 @@ function App() {
       const id = uuidv4();
       element.setAttribute("id", id);
       element.currentTime = 0.001;
+      element.muted = true
       if (src && !videos.find((el) => el.src === src)) {
         element.src = src.toString();
         imageRef.current.push(element);
@@ -115,6 +117,7 @@ function App() {
               <Video
                 video={ref}
                 videoProps={video}
+                visibleVideo={visibleVideo}
                 isSelected={video.id === selectedId}
                 onSelect={() => {
                   selectVideo(video.id);
@@ -127,7 +130,7 @@ function App() {
           },[videos])}
         </Layer>
       </Stage>
-      <ControlPanel Change={handleOnChange} rf={imageRef} />
+      <ControlPanel Change={handleOnChange} rf={imageRef} VisibleVideo={{visibleVideo, setVisibleVideo}}/>
     </>
   );
 }
