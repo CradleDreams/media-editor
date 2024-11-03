@@ -1,6 +1,7 @@
 import React from "react";
 import { Image, Transformer } from "react-konva";
 import { IVideo } from "../entities/slices/videoSlice";
+import Konva from "konva";
 
 interface IVideoProps {
   video: HTMLVideoElement | undefined;
@@ -16,18 +17,15 @@ const Video = ({
   onChange,
   videoProps,
 }: IVideoProps) => {
-  const videoRef = React.useRef<any>();
-  const trRef = React.useRef<any>();
-  const onKeyDown = (e: any) =>{
-    console.log(e);
-    }
+  const videoRef = React.useRef<Konva.Image>(null);
+  const trRef = React.useRef<Konva.Transformer | null>(null);
   React.useEffect(() => {
-    if (isSelected) {
+    if (isSelected && trRef.current && videoRef.current) {
       trRef.current.nodes([videoRef.current]);
-      trRef.current.getLayer().batchDraw();
+      trRef.current?.getLayer()?.batchDraw();
     }
   }, [isSelected]);
-
+  
   return (
     <>
       <Image
@@ -46,9 +44,9 @@ const Video = ({
             y: e.target.y(),
           });
         }}
-        onKeyDown={onKeyDown}
         onTransformEnd={(e) => {
-          const node = videoRef.current;
+          if (videoRef.current) {
+            const node = videoRef.current;
           const scaleX = node.scaleX();
           const scaleY = node.scaleY();
 
@@ -62,7 +60,7 @@ const Video = ({
             width: Math.max(5, node.width() * scaleX),
             height: Math.max(node.height() * scaleY),
           });
-        }}
+        }}}
       />
       {isSelected && (
         <Transformer

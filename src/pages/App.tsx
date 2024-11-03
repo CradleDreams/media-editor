@@ -23,7 +23,7 @@ function App() {
   const layerRef = React.useRef<Konva.Layer>(null);
   const [selectedId, selectVideo] = React.useState<string | null>(null);
 
-  const checkDeselect = (e: any) => {
+  const checkDeselect = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     const clickedOnEmpty = e.target === e.target.getStage();
     if (clickedOnEmpty) {
       selectVideo(null);
@@ -33,6 +33,7 @@ function App() {
   const { videos, time } = useTypedSelector((state) => state.videos.present);
 
   const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
+    
     const target = e.target as HTMLInputElement & {
       files: FileList;
     };
@@ -55,25 +56,28 @@ function App() {
       if (src && !videos.find((el) => el.src === src)) {
         element.src = src.toString();
         imageRef.current.push(element);
-
-        dispatch(
-          createVideo({
-            id: id,
-            src: src.toString(),
-            x: 0,
-            y: 0,
-            width: 500,
-            height: 300,
-          })
-        );
+        element.addEventListener('loadedmetadata', () => {
+          dispatch(
+            createVideo({
+              id: id,
+              src: src.toString(),
+              x: 0,
+              y: 0,
+              width: 500,
+              height: 300,
+              currentTime: 0,
+              duration: element.duration
+            })
+          );
+        })
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src]);
-  const delVideo = (e: any) => {
+  const delVideo = (e: KeyboardEvent) => {
     if (selectedId && e.keyCode === 8) {
-      imageRef.current.find((key: any) => key.id === selectedId)?.pause();
+      imageRef.current.find((key) => key.id === selectedId)?.pause();
       imageRef.current = imageRef.current.filter(
-        (key: any) => key.id !== selectedId
+        (key) => key.id !== selectedId
       );
       dispatch(deleteVideo(selectedId));
     }
@@ -120,7 +124,7 @@ function App() {
                 }}
               />
             );
-          })}
+          },[videos])}
         </Layer>
       </Stage>
       <ControlPanel Change={handleOnChange} rf={imageRef} />
