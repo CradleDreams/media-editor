@@ -10,7 +10,9 @@ import { ButtonList } from "../shared/ui/ButtonList";
 import { useEffect, useState } from "react";
 import { SelectArea } from "../shared/ui/SelectArea";
 import { useDispatch } from "react-redux";
-import { cutVideo } from "../entities/slices/videoSlice";
+import { updateVideo } from "../entities/slices/videoSlice";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile } from "@ffmpeg/util";
 
 const StyledFooter = styled.div`
   display: flex;
@@ -22,37 +24,39 @@ const StyledFooter = styled.div`
   font-size: 40pt;
 `;
 interface IVisibleVideo {
-  visibleVideo: boolean,
-  setVisibleVideo: (visibleVideo: boolean) => void
+  visibleVideo: boolean;
+  setVisibleVideo: (visibleVideo: boolean) => void;
 }
 interface IControlPanelProps {
-  Change: (e: React.FormEvent<HTMLInputElement>) => void
-  rf: React.MutableRefObject<HTMLVideoElement[]>
-  VisibleVideo: IVisibleVideo
+  Change: (e: React.FormEvent<HTMLInputElement>) => void;
+  rf: React.MutableRefObject<HTMLVideoElement[]>;
+  VisibleVideo: IVisibleVideo;
 }
 
 export interface IWaveSurferInstance {
-  media: HTMLAudioElement,
-  play: () => void,
-  pause: () => void,
-  setTime: (time: number) => void
-  getMuted: () => boolean
-  setMuted: (muted: boolean) => void
-};
-export interface ICutWaveProps {
+  media: HTMLAudioElement;
+  play: () => void;
+  pause: () => void;
+  setTime: (time: number) => void;
+  getMuted: () => boolean;
+  setMuted: (muted: boolean) => void;
+}
+
+interface ICutWaveProps {
   duration: number, 
   index: number
 }
+
 const ControlPanel = (props: IControlPanelProps) => {
   const [wavesurfer, setWavesurfer] = useState<IWaveSurferInstance[]>([]);
   const [leftSelect, setLeftSelect] = useState<number>(0);
   const [rightSelect, setRightSelect] = useState<number>(0);
-  const [selectSide, setSelectSide] = useState<string>('');
+  const [selectSide, setSelectSide] = useState<string>("");
   const [selectWs, setSelectWs] = useState<ICutWaveProps>();
 
   const pastStateHistory = useTypedSelector((state) => state.videos.past);
   const futureStateHistory = useTypedSelector((state) => state.videos.future);
-  
+
   const dispatch = useDispatch<AppDispatch>();
 
   const { videos, time } = useTypedSelector((state) => state.videos.present);
@@ -87,14 +91,14 @@ const ControlPanel = (props: IControlPanelProps) => {
     // eslint-disable-next-line array-callback-return
     wavesurfer.map((el) => {
       if (!el.media.error) {
-        return el.setMuted(!el.getMuted())
+        return el.setMuted(!el.getMuted());
       }
     });
-  }
+  };
 
   const handleInvisible = () => {
-    props.VisibleVideo.setVisibleVideo(!props.VisibleVideo.visibleVideo)
-  }
+    props.VisibleVideo.setVisibleVideo(!props.VisibleVideo.visibleVideo);
+  };
   useEffect(() => {
     wavesurfer.map((el) => {
       return el.setTime(time);
@@ -107,42 +111,78 @@ const ControlPanel = (props: IControlPanelProps) => {
   };
 
   const formatTime = (time: number) => {
-    const minutes = Math.round(time/60)
-    const seconds = Math.round(time%60)
-    return `${minutes >= 10 ? minutes : '0'.concat(minutes.toString())}:${seconds >= 10 ? seconds : '0'.concat(seconds.toString())}`
-  }
+    const minutes = Math.round(time / 60);
+    const seconds = Math.round(time % 60);
+    return `${minutes >= 10 ? minutes : "0".concat(minutes.toString())}:${
+      seconds >= 10 ? seconds : "0".concat(seconds.toString())
+    }`;
+  };
   const selectTimeSlice = (e: IWaveSurferInstance) => {
-    const index = wavesurfer.findIndex((el) => el.media === e.media)
-    
-    setSelectWs({duration: e.media.duration, index: index})
-    if (selectSide === 'left' && (e.media.currentTime < rightSelect || !rightSelect)) {
-      setLeftSelect(e.media.currentTime)
+    const index = wavesurfer.findIndex((el) => el.media === e.media);
+    setSelectWs({duration: e.media.duration, index: index});
+    if (
+      selectSide === "left" &&
+      (e.media.currentTime < rightSelect || !rightSelect)
+    ) {
+      setLeftSelect(e.media.currentTime);
     }
-    if (selectSide === 'right' && e.media.currentTime > leftSelect) {
-      setRightSelect(e.media.currentTime)
+    if (selectSide === "right" && e.media.currentTime > leftSelect) {
+      setRightSelect(e.media.currentTime);
     }
-  }
-  const selectSlice = (e: KeyboardEvent) => {
+  };
+  const selectSlice = async (e: KeyboardEvent) => {
     if (e.keyCode === 65) {
-      setSelectSide('left')
+      setSelectSide("left");
     }
     if (e.keyCode === 68) {
-      setSelectSide('right')
+      setSelectSide("right");
     }
     if (e.keyCode === 8) {
-        if ((leftSelect || rightSelect) && selectWs) {
-          dispatch(cutVideo({leftSelect, rightSelect, selectWs}))
-          setSelectSide('')
-          setLeftSelect(0)
-          setRightSelect(0)
-        }
+      if ((leftSelect || rightSelect) && selectWs) {
+        const ffmpeg = new FFmpeg();
+        await ffmpeg.load();
+        await ffmpeg.writeFile("input.mp4", await fetchFile(videos[selectWs.index].src));
+        await ffmpeg.exec([
+          "-i",
+          "input.mp4",
+          "-ss",
+          leftSelect.toString(),
+          "-to",
+          rightSelect ? rightSelect.toString() : selectWs.duration.toString(),
+          "-c",
+          "copy",
+          "output.mp4",
+        ]);
+
+        const fileData = await ffmpeg.readFile("output.mp4");
+        const file = new FileReader();
+
+        file.onload = function () {
+          if (file.result) {
+            dispatch(
+              updateVideo({ ...videos[0], src: file.result.toString() })
+            );
+            setSelectSide("");
+            setLeftSelect(0);
+            setRightSelect(0);
+          }
+        };
+
+        const data = new Uint8Array(fileData as ArrayBuffer);
+        const url = new Blob([data.buffer], { type: "video/mp4" });
+        file.readAsDataURL(url);
+      }
     }
   };
   document.addEventListener("keyup", selectSlice);
+
+  const handleCheck = async () => {};
   return (
     <StyledFooter>
       <ButtonList>
-        <SelectArea>{formatTime(leftSelect)} / {formatTime(rightSelect)}</SelectArea>
+        <SelectArea>
+          {formatTime(leftSelect)} / {formatTime(rightSelect)}
+        </SelectArea>
         <input
           type={"file"}
           accept={"video/mp4"}
@@ -150,11 +190,12 @@ const ControlPanel = (props: IControlPanelProps) => {
           onChange={props.Change}
           style={{ height: 25 }}
         />
-        <StyledButton onClick={handleMuted} style={{width: 50}}>
-          <StyledIcon src={`images/muted.svg`} alt={"muted"}/>
+        <button onClick={handleCheck}>Check</button>
+        <StyledButton onClick={handleMuted} style={{ width: 50 }}>
+          <StyledIcon src={`images/muted.svg`} alt={"muted"} />
         </StyledButton>
-        <StyledButton onClick={handleInvisible} style={{width: 50}}>
-          <StyledIcon src={`images/invisible.svg`} alt={"invisible"}/>
+        <StyledButton onClick={handleInvisible} style={{ width: 50 }}>
+          <StyledIcon src={`images/invisible.svg`} alt={"invisible"} />
         </StyledButton>
         <StyledButton onClick={handlePlay}>
           Play
@@ -190,7 +231,7 @@ const ControlPanel = (props: IControlPanelProps) => {
               selectTimeSlice={selectTimeSlice}
             />
           );
-        }, [videos])}
+        })}
       </WaveList>
     </StyledFooter>
   );

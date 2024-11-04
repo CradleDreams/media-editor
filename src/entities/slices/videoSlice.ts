@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ICutWaveProps } from "../../components/ControlPanel";
 
 export interface IVideo {
   id: string;
@@ -9,7 +8,6 @@ export interface IVideo {
   x?: number;
   y?: number;
   duration: number;
-  currentTime: number;
 }
 interface IVideoSlice {
   videos: IVideo[];
@@ -19,12 +17,6 @@ const initialState: IVideoSlice = {
   videos: [],
   time: 0,
 };
-
-interface ICutWave {
-  leftSelect: number,
-  rightSelect: number,
-  selectWs: ICutWaveProps
-}
 
 const videoSlice = createSlice({
   name: "videos",
@@ -50,19 +42,7 @@ const videoSlice = createSlice({
     deleteVideo: (state, action: PayloadAction<string>) => {
       state.videos = state.videos.filter((video) => video.id !== action.payload)
     },
-    cutVideo: (state, action: PayloadAction<ICutWave>) => {
-        let video = state.videos[action.payload.selectWs.index]        
-        if (!action.payload.leftSelect && video) {
-          video.currentTime = action.payload.rightSelect
-        }
-        if (!action.payload.rightSelect && video) {
-          video.duration = action.payload.leftSelect
-        }
-        if (action.payload.rightSelect && action.payload.leftSelect && video) {
-  
-        }
-    }
   },
 });
-export const { createVideo, updateVideo, updateTime, deleteVideo, cutVideo} = videoSlice.actions;
+export const { createVideo, updateVideo, updateTime, deleteVideo} = videoSlice.actions;
 export const videoReducer = videoSlice.reducer;

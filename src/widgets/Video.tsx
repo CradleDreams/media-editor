@@ -4,7 +4,7 @@ import { IVideo } from "../entities/slices/videoSlice";
 import Konva from "konva";
 
 interface IVideoProps {
-  video: HTMLVideoElement | undefined;
+  video: any;
   isSelected: boolean;
   onSelect: () => void;
   onChange: (newAttrs: IVideo) => void;

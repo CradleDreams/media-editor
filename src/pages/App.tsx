@@ -67,7 +67,6 @@ function App() {
               y: 0,
               width: 500,
               height: 300,
-              currentTime: 0,
               duration: element.duration
             })
           );
@@ -127,7 +126,7 @@ function App() {
                 }}
               />
             );
-          },[videos])}
+          })}
         </Layer>
       </Stage>
       <ControlPanel Change={handleOnChange} rf={imageRef} VisibleVideo={{visibleVideo, setVisibleVideo}}/>
