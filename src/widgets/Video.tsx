@@ -4,7 +4,7 @@ import { IVideo } from "../entities/slices/videoSlice";
 import Konva from "konva";
 
 interface IVideoProps {
-  video: any;
+  video: HTMLVideoElement | undefined;
   isSelected: boolean;
   onSelect: () => void;
   onChange: (newAttrs: IVideo) => void;
@@ -27,6 +27,7 @@ const Video = ({
       trRef.current?.getLayer()?.batchDraw();
     }
   }, [isSelected]);
+  console.log(video);
   
   return (
     <>

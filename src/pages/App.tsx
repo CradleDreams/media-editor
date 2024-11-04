@@ -92,7 +92,7 @@ function App() {
     return () => {
       anim.stop();
     };
-  }, []);
+  }, [videos]);
 
   useEffect(() => {
     imageRef.current.map((el) => (el.currentTime = time));

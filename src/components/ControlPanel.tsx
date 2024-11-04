@@ -138,7 +138,7 @@ const ControlPanel = (props: IControlPanelProps) => {
       setSelectSide("right");
     }
     if (e.keyCode === 8) {
-      if ((leftSelect || rightSelect) && selectWs) {
+      if ((leftSelect || rightSelect) && selectWs) { 
         const ffmpeg = new FFmpeg();
         await ffmpeg.load();
         await ffmpeg.writeFile("input.mp4", await fetchFile(videos[selectWs.index].src));
@@ -160,8 +160,9 @@ const ControlPanel = (props: IControlPanelProps) => {
         file.onload = function () {
           if (file.result) {
             dispatch(
-              updateVideo({ ...videos[0], src: file.result.toString() })
+              updateVideo({ ...videos[selectWs.index], src: file.result.toString() })
             );
+            props.rf.current[selectWs.index].src = file.result.toString()
             setSelectSide("");
             setLeftSelect(0);
             setRightSelect(0);
@@ -175,8 +176,6 @@ const ControlPanel = (props: IControlPanelProps) => {
     }
   };
   document.addEventListener("keyup", selectSlice);
-
-  const handleCheck = async () => {};
   return (
     <StyledFooter>
       <ButtonList>
@@ -190,7 +189,6 @@ const ControlPanel = (props: IControlPanelProps) => {
           onChange={props.Change}
           style={{ height: 25 }}
         />
-        <button onClick={handleCheck}>Check</button>
         <StyledButton onClick={handleMuted} style={{ width: 50 }}>
           <StyledIcon src={`images/muted.svg`} alt={"muted"} />
         </StyledButton>
@@ -219,7 +217,7 @@ const ControlPanel = (props: IControlPanelProps) => {
         </StyledButton>
       </ButtonList>
       <WaveList>
-        {videos.map((video, index) => {
+        {props.rf.current.map((video, index) => {
           return (
             <WaveVideo
               key={index}
