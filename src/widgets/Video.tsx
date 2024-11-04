@@ -27,7 +27,6 @@ const Video = ({
       trRef.current?.getLayer()?.batchDraw();
     }
   }, [isSelected]);
-  console.log(video);
   
   return (
     <>

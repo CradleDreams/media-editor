@@ -43,8 +43,8 @@ export interface IWaveSurferInstance {
 }
 
 interface ICutWaveProps {
-  duration: number, 
-  index: number
+  duration: number;
+  index: number;
 }
 
 const ControlPanel = (props: IControlPanelProps) => {
@@ -60,6 +60,7 @@ const ControlPanel = (props: IControlPanelProps) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { videos, time } = useTypedSelector((state) => state.videos.present);
+
   const handlePlay = () => {
     props.rf.current.map((el: HTMLVideoElement) => {
       // const videoProps = videos.find((video) => video.id === el.id)
@@ -117,9 +118,9 @@ const ControlPanel = (props: IControlPanelProps) => {
       seconds >= 10 ? seconds : "0".concat(seconds.toString())
     }`;
   };
-  const selectTimeSlice = (e: IWaveSurferInstance) => {
-    const index = wavesurfer.findIndex((el) => el.media === e.media);
-    setSelectWs({duration: e.media.duration, index: index});
+  const selectTimeSlice = (e: any) => {
+    const index = videos.findIndex((el) => Math.round(el.duration) === Math.round(e.decodedData.duration));
+    setSelectWs({ duration: e.media.duration, index: index });
     if (
       selectSide === "left" &&
       (e.media.currentTime < rightSelect || !rightSelect)
@@ -130,29 +131,77 @@ const ControlPanel = (props: IControlPanelProps) => {
       setRightSelect(e.media.currentTime);
     }
   };
-  const selectSlice = async (e: KeyboardEvent) => {
-    if (e.keyCode === 65) {
+  const selectSlice = async ({ keyCode }: any) => {
+    if (keyCode === 65) {
       setSelectSide("left");
     }
-    if (e.keyCode === 68) {
+    if (keyCode === 68) {
       setSelectSide("right");
     }
-    if (e.keyCode === 8) {
-      if ((leftSelect || rightSelect) && selectWs) { 
+    if (keyCode === 8) {
+      if (
+        (leftSelect || rightSelect) && 
+        selectWs
+      ) {
         const ffmpeg = new FFmpeg();
         await ffmpeg.load();
-        await ffmpeg.writeFile("input.mp4", await fetchFile(videos[selectWs.index].src));
-        await ffmpeg.exec([
-          "-i",
+        
+        
+        await ffmpeg.writeFile(
           "input.mp4",
-          "-ss",
-          leftSelect.toString(),
-          "-to",
-          rightSelect ? rightSelect.toString() : selectWs.duration.toString(),
-          "-c",
-          "copy",
-          "output.mp4",
-        ]);
+          await fetchFile(videos[selectWs.index].src)
+        );
+        if (leftSelect && rightSelect) {
+          await ffmpeg.exec([
+            "-i",
+            "input.mp4",
+            "-ss",
+            "0",
+            "-to",
+            leftSelect.toString(),
+            "-c",
+            "copy",
+            "left.mp4",
+          ]);
+
+          await ffmpeg.exec([
+            "-i",
+            "input.mp4",
+            "-ss",
+            rightSelect.toString(),
+            "-c",
+            "copy",
+            "right.mp4",
+          ]);
+          await ffmpeg.writeFile(
+            "concat_list.txt",
+            "file left.mp4\nfile right.mp4"
+          );
+
+          await ffmpeg.exec([
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            "concat_list.txt",
+            "-c",
+            "copy",
+            "output.mp4",
+          ]);
+        } else {
+          await ffmpeg.exec([
+            "-i",
+            "input.mp4",
+            "-ss",
+            leftSelect.toString(),
+            "-to",
+            rightSelect ? rightSelect.toString() : videos[selectWs.index].duration.toString(),
+            "-c",
+            "copy",
+            "output.mp4",
+          ]);
+        }
 
         const fileData = await ffmpeg.readFile("output.mp4");
         const file = new FileReader();
@@ -160,9 +209,13 @@ const ControlPanel = (props: IControlPanelProps) => {
         file.onload = function () {
           if (file.result) {
             dispatch(
-              updateVideo({ ...videos[selectWs.index], src: file.result.toString() })
+              updateVideo({
+                ...videos[selectWs.index],
+                src: file.result.toString(),
+              })
             );
-            props.rf.current[selectWs.index].src = file.result.toString()
+            props.rf.current[selectWs.index].src = file.result.toString();
+            setSelectWs(undefined)
             setSelectSide("");
             setLeftSelect(0);
             setRightSelect(0);
@@ -175,7 +228,13 @@ const ControlPanel = (props: IControlPanelProps) => {
       }
     }
   };
-  document.addEventListener("keyup", selectSlice);
+  useEffect(() => {
+    document.addEventListener("keydown", selectSlice);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectWs])
+    
+ 
+
   return (
     <StyledFooter>
       <ButtonList>
